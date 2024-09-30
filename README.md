@@ -1,2 +1,2 @@
-# rubeticket
-Ticket booking system
+# RubeTicket
+Concert ticket booking system
