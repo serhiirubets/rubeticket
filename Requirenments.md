@@ -11,8 +11,9 @@
 
 ### Browse Concerts:
 
-- As a user, I want to view a list of upcoming music concerts with details like date, time, and location.
-- As a user, I want to filter concerts by band, genre, location, or date so I can easily find concerts I’m interested in.
+- As a user, I want to view a list of music concerts with details like date, time, and location.
+- As a user, I want to filter concerts by band, genre, location, or date, so I can easily find concerts I’m interested in.
+- As a user, I want to see all available tickets for the specific concert
 
 ### View Band Information:
 
