@@ -1,0 +1,913 @@
+openapi: 3.0.3
+info:
+  title: RubeTicket - OpenAPI 3.0
+  description: |-
+    Concert ticket backend API specification
+    
+    Some useful links:
+    - [Backend repository](https://github.com/serhiirubets/rubeticket)
+    - [The source API definition for the RubeTicket](https://github.com/serhiirubets/rubeticket/openapi.yaml)
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: serhii.rubets@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      description: Register a new user
+      operationId: registerUser
+      requestBody:
+        description: Register body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequestDto'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequestDto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequestDto'
+        required: true
+      responses:
+        '201':
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResponseDto'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResponseDto'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login
+      description: Login
+      operationId: loginUser
+      requestBody:
+        description: Login body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDto'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDto'
+        required: true
+      responses:
+        '200':
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+  /auth/password_recovery:
+    post:
+      tags:
+        - auth
+      summary: Password recovery
+      description: Send password recovery link to email
+      operationId: passwordRecovery
+      requestBody:
+        description: Password recovery body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoverPasswordDto'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/RecoverPasswordDto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecoverPasswordDto'
+        required: true
+      responses:
+        '200':
+          description: Password recovery link was sent to email
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+
+  /concerts:
+    get:
+      tags:
+        - concerts
+      summary: Find all concerts
+      description: Find all concerts, using filters by status, music band, location
+      operationId: findConcerts
+      parameters:
+        - name: status
+          in: query
+          description: Concerts status
+          required: false
+          explode: true
+          example: upcoming
+          schema:
+            type: string
+            enum:
+              - upcoming
+              - past
+
+        - name: genre
+          in: query
+          description: Concerts genre
+          required: false
+          explode: true
+          example: pop,rock
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: band
+          in: query
+          description: Music band
+          required: false
+          explode: true
+          example: Abba,Queen
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: location
+          in: query
+          description: Concert location
+          required: false
+          explode: true
+          example: Warsaw, Krakow
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: limit
+          in: query
+          description: Concert items count in response
+          required: false
+          example: 2
+          schema:
+            type: number
+
+        - name: offset
+          in: query
+          description: How many concert skip in response
+          required: false
+          example: 15
+          schema:
+            type: number
+
+        - name: fromDate
+          in: query
+          description: After what date in ISO need to find concerts
+          required: false
+          example: 2024-09-30T18:08:18.626Z
+          schema:
+            type: string
+            format: date-time
+
+        - name: toDate
+          in: query
+          description: Before what date in ISO (including) need to find concerts
+          required: false
+          example: 2024-09-30T18:08:18.626Z
+          schema:
+            type: string
+            format: date-time
+
+      responses:
+        '200':
+          description: Successful find conceert response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    example: 200
+                  limit:
+                    type: integer
+                    example: 5
+                  offset:
+                    type: integer
+                    example: 10
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConcertDto'
+
+
+        '400':
+          description: Invalid status value
+
+    post:
+      tags:
+        - backoffice
+      summary: Create new concert
+      description: ''
+      operationId: createConcert
+      security:
+        - AdminAuth: []
+      requestBody:
+        description: Create concert body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConcertRequestDto'
+        required: true
+      responses:
+        '200':
+          description: Concert was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConcertDto'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ConcertDto'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+  /concerts/id:
+    put:
+      tags:
+        - backoffice
+      summary: Update concert by id
+      description: ''
+      operationId: updateConcert
+      security:
+        - AdminAuth: []
+      requestBody:
+        description: Update concert body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConcertRequestDto'
+        required: true
+      responses:
+        '200':
+          description: Update concert by id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConcertDto'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ConcertDto'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+    delete:
+      tags:
+        - backoffice
+      summary: Delete concert
+      description: 'Delete concert'
+      security:
+        - AdminAuth: []
+      operationId: deleteConcert
+      parameters:
+        - name: id
+          in: query
+          description: Concert id
+          required: true
+          example: 2
+          schema:
+            type: number
+      responses:
+        default:
+          description: Deleted
+
+  /concerts/id/tickets:
+    get:
+      tags:
+        - concerts
+      summary: Find all tickets for the specific concert
+      description: Find all tickets for the specific concert
+      operationId: findTicketByConcertId
+
+      responses:
+        '200':
+          description: Successful find conceert response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTicketResponseDto'
+
+        '400':
+          description: Invalid status value
+
+  /bands:
+    post:
+      tags:
+        - backoffice
+      summary: Create new band
+      description: ''
+      operationId: createBand
+      security:
+        - AdminAuth: []
+      requestBody:
+        description: Create band body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBandDto'
+        required: true
+      responses:
+        '200':
+          description: Band was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Band'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Band'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+  /bands/id:
+    get:
+      tags:
+        - bands
+      summary: Get band by id
+      description: Get specific band by id
+      operationId: getBandById
+      parameters:
+        - name: id
+          in: query
+          description: Id of a band
+          required: true
+          example: 123
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful find band by id response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Band'
+
+    put:
+      tags:
+        - backoffice
+      summary: Update band
+      description: ''
+      operationId: updatedBand
+      security:
+        - AdminAuth: []
+      requestBody:
+        description: Create band body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBandDto'
+        required: true
+      responses:
+        '200':
+          description: Update band details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Band'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Band'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+
+    delete:
+      tags:
+        - backoffice
+      summary: Delete band
+      security:
+        - AdminAuth: []
+      description: 'Delete band'
+      operationId: deleteBand
+      parameters:
+        - name: id
+          in: query
+          description: Band id
+          required: true
+          example: 2
+          schema:
+            type: number
+      responses:
+        default:
+          description: Deleted
+
+  /cart:
+    get:
+      tags:
+        - cart
+      summary: Get information about tickets in the cart
+      description: Get information about items in the cart ticket to cart
+      operationId: getCart
+      responses:
+        '200':
+          description: Tickets in cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponseDto'
+    post:
+      tags:
+        - cart
+      summary: Add ticket to the cart
+      description: Add ticket to cart
+      operationId: addToCart
+      requestBody:
+        description: Login body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequestDto'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequestDto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequestDto'
+        required: true
+      responses:
+        default:
+          description: successful operation
+
+  /orders:
+    get:
+      tags:
+        - orders
+      summary: Get all purchased tickets
+      description: Get information about all purchased tickets
+      operationId: getOrders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Ticket count in response
+          required: false
+          example: 2
+          schema:
+            type: number
+
+        - name: offset
+          in: query
+          description: How many tickets skip in response
+          required: false
+          example: 15
+          schema:
+            type: number
+
+        - name: fromDate
+          in: query
+          description: After what date in ISO need to find tickets
+          required: false
+          example: 2024-09-30T18:08:18.626Z
+          schema:
+            type: string
+            format: date-time
+
+        - name: toDate
+          in: query
+          description: Before what date in ISO (including) need to find tickets
+          required: false
+          example: 2024-09-30T18:08:18.626Z
+          schema:
+            type: string
+            format: date-time
+
+      responses:
+        '200':
+          description: All purchased tickets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    example: 200
+                  limit:
+                    type: integer
+                    example: 5
+                  offset:
+                    type: integer
+                    example: 10
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        concertId:
+                          type: string
+                        totalPrice:
+                          type: number
+                        purchesedDate:
+                          type: string
+                          format: date-time
+                          example: "2024-09-30T18:08:18.626Z"
+                        tickets:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/TicketDto'
+
+    post:
+      tags:
+        - orders
+      summary: Purchase tickets from cart
+      description: Purchase tickets that are in the user cart
+      operationId: orderTickets
+      security:
+        - BearerAuth: []
+
+      responses:
+        default:
+          description: successful operation
+
+  /orders/id:
+    get:
+      tags:
+        - orders
+      summary: Get order by id
+      description: Get information about specific order
+      operationId: getOrderById
+      parameters:
+        - name: id
+          in: query
+          description: Order id
+          required: true
+          example: 2
+          schema:
+            type: number
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get tickets for the specific order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+
+
+components:
+  schemas:
+    RegisterUserRequestDto:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+          example: test@test.com
+        password:
+          type: string
+          example: test@test.com
+
+    RegisterUserResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 123
+        email:
+          type: string
+          example: test@test.com
+
+    LoginRequestDto:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+          example: test@test.com
+        password:
+          type: string
+          example: test@test.com
+
+    LoginResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 123
+        email:
+          type: string
+          example: test@test.com
+
+    RecoverPasswordDto:
+      type: object
+      properties:
+        email:
+          type: string
+          example: test@test.com
+
+    ConcertDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        title:
+          type: string
+          example: "Title"
+        description:
+          type: string
+          example: "Description"
+        posterUrl:
+          type: string
+          format: uri
+          example: "http://example.com/poster.jpg"
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["metal"]
+        date:
+          type: string
+          format: date-time
+          example: "2024-09-30T18:08:18.626Z"
+        location:
+          type: string
+          example: "Poland, Warsaw"
+        bands:
+          type: array
+          items:
+            type: string
+          example: ["Band 1", "Band 2"]
+
+    AddToCartRequestDto:
+      type: array
+      items:
+        type: object
+        properties:
+          ticketType:
+            type: integer
+            format: int32
+            description: Type of a ticket, like general, VIP, super VIP, etc...
+            example: 1
+          seatType:
+            type: integer
+            format: int32
+            description: Type of seat, like in the center, right or left corner, etc...
+            example: 1
+          seatsCount:
+            type: integer
+            format: int32
+            description: Number of seats for the selected seat type
+            example: 1
+
+    TicketDto:
+      type: object
+      properties:
+        ticketType:
+          type: integer
+          format: int32
+          description: Type of a ticket, like general, VIP, super VIP, etc...
+          example: 1
+        seatType:
+          type: integer
+          format: int32
+          description: Type of seat, like in the center, right or left corner, etc...
+          example: 1
+        seatsCount:
+          type: integer
+          format: int32
+          description: Number of seats for the selected seat type
+          example: 1
+        ticketPrice:
+          type: integer
+          format: int64
+          example: 10
+
+    OrderDto:
+      type: object
+      properties:
+        concertId:
+          type: string
+        totalPrice:
+          type: number
+        purchesedDate:
+          type: string
+          format: date-time
+          example: "2024-09-30T18:08:18.626Z"
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketDto'
+
+    CartResponseDto:
+      type: object
+      properties:
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketDto'
+        totalPrice:
+          type: integer
+          format: int64
+          example: 10
+
+    GetTicketResponseDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/TicketDto'
+
+    CreateConcertRequestDto:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Title"
+        description:
+          type: string
+          example: "Description"
+        posterUrl:
+          type: string
+          format: uri
+          example: "http://example.com/poster.jpg"
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["metal"]
+        date:
+          type: string
+          format: date-time
+          example: "2024-09-30T18:08:18.626Z"
+        location:
+          type: string
+          example: "Poland, Warsaw"
+        bands:
+          type: array
+          items:
+            type: string
+          example: ["Band 1", "Band 2"]
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: 437 Lytton
+        city:
+          type: string
+          example: Palo Alto
+        state:
+          type: string
+          example: CA
+        zip:
+          type: string
+          example: '94301'
+      xml:
+        name: address
+
+
+    Band:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Abba
+        description:
+          type: string
+        genre:
+          type: array
+          items:
+            type: string
+        members:
+          type: array
+          items:
+            type: string
+        discography:
+          type: array
+          items:
+            type: string
+        years:
+          type: string
+          example: 2002–present
+
+    CreateBandDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Abba
+        description:
+          type: string
+        genre:
+          type: array
+          items:
+            type: string
+        members:
+          type: array
+          items:
+            type: string
+        discography:
+          type: array
+          items:
+            type: string
+        years:
+          type: string
+          example: 2002–present
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        username:
+          type: string
+          example: theUser
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: '12345'
+        phone:
+          type: string
+          example: '12345'
+        userStatus:
+          type: integer
+          description: User Status
+          format: int32
+          example: 1
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    AdminAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
