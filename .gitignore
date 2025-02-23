@@ -1,0 +1,4 @@
+/postgres-data
+.env
+.idea
+.DS_Store
