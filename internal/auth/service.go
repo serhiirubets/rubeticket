@@ -17,7 +17,7 @@ func NewAuthService(userRepository users.IUserRepository) *AuthService {
 }
 
 func (service *AuthService) Register(payload *RegisterRequest) (uint, error) {
-	existedUser, _ := service.UserRepository.FindByEmail(payload.Email)
+	existedUser, _ := service.UserRepository.GetByEmail(payload.Email)
 
 	if existedUser != nil {
 		return 0, errors.New(ErrUserExists)
@@ -54,7 +54,7 @@ func (service *AuthService) Register(payload *RegisterRequest) (uint, error) {
 }
 
 func (service *AuthService) Login(email, password string) (string, error) {
-	existedUser, _ := service.UserRepository.FindByEmail(email)
+	existedUser, _ := service.UserRepository.GetByEmail(email)
 	if existedUser == nil {
 		return "", errors.New(ErrWrongCredentials)
 	}

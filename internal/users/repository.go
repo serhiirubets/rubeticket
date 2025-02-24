@@ -22,11 +22,22 @@ func (repo *UserRepository) Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func (repo *UserRepository) FindByEmail(email string) (*User, error) {
+func (repo *UserRepository) GetByEmail(email string) (*User, error) {
 	var user User
 	result := repo.DB.First(&user, "email = ?", email)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+	return &user, nil
+}
+
+func (repo *UserRepository) GetById(id string) (*User, error) {
+	var user User
+	result := repo.DB.First(&user, id)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
 	return &user, nil
 }

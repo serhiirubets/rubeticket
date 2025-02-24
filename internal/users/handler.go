@@ -2,6 +2,7 @@ package users
 
 import (
 	"github.com/serhiirubets/rubeticket/pkg/log"
+	"github.com/serhiirubets/rubeticket/pkg/res"
 	"net/http"
 )
 
@@ -22,10 +23,26 @@ func NewUserHandler(router *http.ServeMux, deps *UserHandlerDeps) {
 	}
 
 	router.Handle("Get /users", handler.Find())
+	router.Handle("Get /users/{id}", handler.GetById())
 }
 
 func (handler *UserHandler) Find() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+	}
+}
+
+func (handler *UserHandler) GetById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		user, userErr := handler.UserRepository.GetById(id)
+
+		if userErr != nil {
+			res.Json(w, nil, http.StatusNotFound)
+			return
+		}
+
+		res.Json(w, user, http.StatusOK)
 	}
 }

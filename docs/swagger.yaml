@@ -1,0 +1,87 @@
+basePath: /v1
+definitions:
+  github_com_serhiirubets_rubeticket_internal_users.Gender:
+    enum:
+    - Male
+    - Female
+    type: string
+    x-enum-varnames:
+    - Male
+    - Female
+  internal_auth.RegisterRequest:
+    properties:
+      birthday:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      gender:
+        allOf:
+        - $ref: '#/definitions/github_com_serhiirubets_rubeticket_internal_users.Gender'
+        enum:
+        - Male
+        - Female
+      lastName:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - birthday
+    - email
+    - firstName
+    - gender
+    - lastName
+    - password
+    type: object
+  internal_auth.RegisterResponse:
+    properties:
+      token:
+        type: string
+    type: object
+host: localhost:777
+info:
+  contact: {}
+  description: This is a Concert booking application
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Concert booking API
+  version: "1.0"
+paths:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user and return authentication token
+      parameters:
+      - description: Registration credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully registered
+          schema:
+            $ref: '#/definitions/internal_auth.RegisterResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - auth
+swagger: "2.0"

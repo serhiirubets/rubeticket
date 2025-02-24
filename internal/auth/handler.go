@@ -61,6 +61,18 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 	}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user and return authentication token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body RegisterRequest true "Registration credentials"
+// @Success 200 {object} RegisterResponse "Successfully registered"
+// @Failure 400 {string} string "Bad request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Router /auth/register [post]
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[RegisterRequest](&w, r)
