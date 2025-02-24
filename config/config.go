@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"github.com/joho/godotenv"
@@ -15,8 +15,9 @@ type AuthConfig struct {
 }
 
 type Config struct {
-	Db   DbConfig
-	Auth AuthConfig
+	Db       DbConfig
+	Auth     AuthConfig
+	LogLevel string
 }
 
 func LoadConfig() *Config {
@@ -31,5 +32,6 @@ func LoadConfig() *Config {
 		Auth: AuthConfig{
 			Secret: os.Getenv("SECRET"),
 		},
+		LogLevel: os.Getenv("LOG_LEVEL"),
 	}
 }
