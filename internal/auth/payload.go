@@ -16,7 +16,7 @@ type RegisterRequest struct {
 	FirstName string       `json:"firstName" validate:"required,alphaunicode"`
 	LastName  string       `json:"lastName" validate:"required,alphaunicode"`
 	Password  string       `json:"password" validate:"required,min=6"`
-	Gender    users.Gender `json:"gender" validate:"required,oneof=Male Female"`
+	Gender    users.Gender `json:"gender" validate:"required,oneof=male female"`
 	Birthday  string       `json:"birthday" validate:"required,date_iso8601"`
 }
 

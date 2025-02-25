@@ -14,8 +14,10 @@ func CORS(next http.Handler) http.Handler {
 		allowedOrigins := map[string]bool{
 			"http://localhost":      true,
 			"http://localhost:8080": true,
+			"http://localhost:4200": true,
 			"http://127.0.0.1":      true,
 			"http://127.0.0.1:8080": true,
+			"http://127.0.0.1:4200": true,
 		}
 
 		header := w.Header()

@@ -16,8 +16,8 @@ const (
 )
 
 const (
-	Male   Gender = "Male"
-	Female Gender = "Female"
+	Male   Gender = "male"
+	Female Gender = "female"
 )
 
 var StatusMap = map[Status]string{
