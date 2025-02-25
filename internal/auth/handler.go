@@ -31,6 +31,18 @@ func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 	router.HandleFunc("POST /auth/register", handler.Register())
 }
 
+// Login godoc
+// @Summary Login a user
+// @Description Login user, set token in cookie and return success: true
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body LoginRequest true "LoginRequest credentials"
+// @Success 200 {object} LoginResponse "Successfully logged in"
+// @Failure 400 {string} string "Bad request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Router /auth/login [post]
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[LoginRequest](&w, r)
@@ -53,11 +65,8 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 			return
 		}
 
-		data := LoginResponse{
-			Token: token,
-		}
-
-		res.Json(w, data, http.StatusOK)
+		res.SetToken(w, token)
+		res.Json(w, &LoginResponse{Success: true}, http.StatusOK)
 	}
 }
 
@@ -104,10 +113,7 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 			return
 		}
 
-		data := RegisterResponse{
-			Token: token,
-		}
-
-		res.Json(w, data, http.StatusOK)
+		res.SetToken(w, token)
+		res.Json(w, &RegisterResponse{Success: true}, http.StatusOK)
 	}
 }

@@ -10,3 +10,18 @@ func Json(w http.ResponseWriter, data any, statusCode int) {
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(data)
 }
+
+func SetToken(w http.ResponseWriter, token string) {
+	cookie := http.Cookie{
+		Name:     "token",
+		Value:    token,
+		HttpOnly: true,
+		Path:     "/",
+		// Secure:   true,           // Если используется HTTPS
+		// SameSite: http.SameSiteStrictMode,
+		// MaxAge:   86400,          // Срок действия в секундах (например, 24 часа)
+		// Domain:   "yourdomain.com",
+	}
+
+	http.SetCookie(w, &cookie)
+}

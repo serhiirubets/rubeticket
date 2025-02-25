@@ -1,14 +1,21 @@
 basePath: /v1
 definitions:
-  github_com_serhiirubets_rubeticket_internal_users.Gender:
-    enum:
-    - Male
-    - Female
-    type: string
-    x-enum-varnames:
-    - Male
-    - Female
-  internal_auth.RegisterRequest:
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      success:
+        type: boolean
+    type: object
+  auth.RegisterRequest:
     properties:
       birthday:
         type: string
@@ -18,10 +25,10 @@ definitions:
         type: string
       gender:
         allOf:
-        - $ref: '#/definitions/github_com_serhiirubets_rubeticket_internal_users.Gender'
+        - $ref: '#/definitions/users.Gender'
         enum:
-        - Male
-        - Female
+        - male
+        - female
       lastName:
         type: string
       password:
@@ -35,11 +42,19 @@ definitions:
     - lastName
     - password
     type: object
-  internal_auth.RegisterResponse:
+  auth.RegisterResponse:
     properties:
-      token:
-        type: string
+      success:
+        type: boolean
     type: object
+  users.Gender:
+    enum:
+    - male
+    - female
+    type: string
+    x-enum-varnames:
+    - Male
+    - Female
 host: localhost:777
 info:
   contact: {}
@@ -50,6 +65,40 @@ info:
   title: Concert booking API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 'Login user, set token in cookie and return success: true'
+      parameters:
+      - description: LoginRequest credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged in
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Login a user
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -61,14 +110,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_auth.RegisterRequest'
+          $ref: '#/definitions/auth.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Successfully registered
           schema:
-            $ref: '#/definitions/internal_auth.RegisterResponse'
+            $ref: '#/definitions/auth.RegisterResponse'
         "400":
           description: Bad request
           schema:

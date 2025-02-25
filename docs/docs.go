@@ -19,6 +19,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Login user, set token in cookie and return success: true",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login a user",
+                "parameters": [
+                    {
+                        "description": "LoginRequest credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged in",
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/register": {
             "post": {
                 "description": "Register a new user and return authentication token",
@@ -39,7 +91,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_auth.RegisterRequest"
+                            "$ref": "#/definitions/auth.RegisterRequest"
                         }
                     }
                 ],
@@ -47,7 +99,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully registered",
                         "schema": {
-                            "$ref": "#/definitions/internal_auth.RegisterResponse"
+                            "$ref": "#/definitions/auth.RegisterResponse"
                         }
                     },
                     "400": {
@@ -73,18 +125,30 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_serhiirubets_rubeticket_internal_users.Gender": {
-            "type": "string",
-            "enum": [
-                "Male",
-                "Female"
+        "auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
             ],
-            "x-enum-varnames": [
-                "Male",
-                "Female"
-            ]
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
         },
-        "internal_auth.RegisterRequest": {
+        "auth.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "auth.RegisterRequest": {
             "type": "object",
             "required": [
                 "birthday",
@@ -106,12 +170,12 @@ const docTemplate = `{
                 },
                 "gender": {
                     "enum": [
-                        "Male",
-                        "Female"
+                        "male",
+                        "female"
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_serhiirubets_rubeticket_internal_users.Gender"
+                            "$ref": "#/definitions/users.Gender"
                         }
                     ]
                 },
@@ -124,13 +188,24 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_auth.RegisterResponse": {
+        "auth.RegisterResponse": {
             "type": "object",
             "properties": {
-                "token": {
-                    "type": "string"
+                "success": {
+                    "type": "boolean"
                 }
             }
+        },
+        "users.Gender": {
+            "type": "string",
+            "enum": [
+                "male",
+                "female"
+            ],
+            "x-enum-varnames": [
+                "Male",
+                "Female"
+            ]
         }
     }
 }`
