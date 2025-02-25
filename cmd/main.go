@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/serhiirubets/rubeticket/config"
 	_ "github.com/serhiirubets/rubeticket/docs"
+	"github.com/serhiirubets/rubeticket/internal/accounts"
 	"github.com/serhiirubets/rubeticket/internal/auth"
 	"github.com/serhiirubets/rubeticket/internal/users"
 	"github.com/serhiirubets/rubeticket/pkg/db"
@@ -35,6 +36,12 @@ func App() http.Handler {
 		Config:      conf,
 		Logger:      logger,
 		AuthService: authService,
+	})
+
+	accounts.NewAccountHandler(router, &accounts.AccountHandlerDeps{
+		Logger:         logger,
+		UserRepository: usersRepository,
+		Config:         conf,
 	})
 
 	// Middlewares
