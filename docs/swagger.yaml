@@ -1,5 +1,18 @@
 basePath: /v1
 definitions:
+  accounts.GetAccountResponse:
+    properties:
+      birthday:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      gender:
+        $ref: '#/definitions/users.Gender'
+      lastName:
+        type: string
+    type: object
   auth.LoginRequest:
     properties:
       email:
@@ -65,6 +78,25 @@ info:
   title: Concert booking API
   version: "1.0"
 paths:
+  /account:
+    get:
+      description: Return information about current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/accounts.GetAccountResponse'
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get account info
+      tags:
+      - Account
   /auth/login:
     post:
       consumes:

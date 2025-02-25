@@ -31,6 +31,15 @@ func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
 	router.Handle("GET /account", middleware.Auth(handler.GetAccount(), deps.Config))
 }
 
+// GetAccount godoc
+// @Summary Get account info
+// @Description Return information about current user
+// @Tags Account
+// @Security ApiKeyAuth
+// @Produce json
+// @Success 200 {object} GetAccountResponse "Success"
+// @Failure 401 {object} string "Not authorized"
+// @Router /account [get]
 func (handler *AccountHandler) GetAccount() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		email, _ := r.Context().Value(middleware.ContextEmailKey).(string)
