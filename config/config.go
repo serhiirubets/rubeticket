@@ -22,6 +22,7 @@ type Config struct {
 	Db       DbConfig
 	Auth     AuthConfig
 	LogLevel string
+	Env      string
 }
 
 func LoadConfig() *Config {
@@ -45,5 +46,6 @@ func LoadConfig() *Config {
 			Secret: os.Getenv("SECRET"),
 		},
 		LogLevel: os.Getenv("LOG_LEVEL"),
+		Env:      os.Getenv("ENV"),
 	}
 }
