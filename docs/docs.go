@@ -48,6 +48,116 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Replace all fields of the current user's account with provided values",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Update full account info",
+                "parameters": [
+                    {
+                        "description": "Full account details to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/accounts.UpdateAccountRequestPut"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/accounts.UpdateAccountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update specific fields of the current user's account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Update account info",
+                "parameters": [
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/accounts.UpdateAccountRequestPatch"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/accounts.UpdateAccountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/auth/login": {
@@ -159,6 +269,9 @@ const docTemplate = `{
         "accounts.GetAccountResponse": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "birthday": {
                     "type": "string"
                 },
@@ -172,6 +285,81 @@ const docTemplate = `{
                     "$ref": "#/definitions/users.Gender"
                 },
                 "lastName": {
+                    "type": "string"
+                },
+                "photoUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "accounts.UpdateAccountRequestPatch": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "birthday": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "gender": {
+                    "$ref": "#/definitions/users.Gender"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "photoUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "accounts.UpdateAccountRequestPut": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "birthday": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "gender": {
+                    "$ref": "#/definitions/users.Gender"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "photoUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "accounts.UpdateAccountResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "birthday": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "gender": {
+                    "$ref": "#/definitions/users.Gender"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "photoUrl": {
                     "type": "string"
                 }
             }

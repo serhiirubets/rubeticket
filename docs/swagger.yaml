@@ -2,6 +2,8 @@ basePath: /v1
 definitions:
   accounts.GetAccountResponse:
     properties:
+      address:
+        type: string
       birthday:
         type: string
       email:
@@ -11,6 +13,55 @@ definitions:
       gender:
         $ref: '#/definitions/users.Gender'
       lastName:
+        type: string
+      photoUrl:
+        type: string
+    type: object
+  accounts.UpdateAccountRequestPatch:
+    properties:
+      address:
+        type: string
+      birthday:
+        type: string
+      firstName:
+        type: string
+      gender:
+        $ref: '#/definitions/users.Gender'
+      lastName:
+        type: string
+      photoUrl:
+        type: string
+    type: object
+  accounts.UpdateAccountRequestPut:
+    properties:
+      address:
+        type: string
+      birthday:
+        type: string
+      firstName:
+        type: string
+      gender:
+        $ref: '#/definitions/users.Gender'
+      lastName:
+        type: string
+      photoUrl:
+        type: string
+    type: object
+  accounts.UpdateAccountResponse:
+    properties:
+      address:
+        type: string
+      birthday:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      gender:
+        $ref: '#/definitions/users.Gender'
+      lastName:
+        type: string
+      photoUrl:
         type: string
     type: object
   auth.LoginRequest:
@@ -95,6 +146,77 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get account info
+      tags:
+      - Account
+    patch:
+      consumes:
+      - application/json
+      description: Update specific fields of the current user's account
+      parameters:
+      - description: Fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/accounts.UpdateAccountRequestPatch'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/accounts.UpdateAccountResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Update account info
+      tags:
+      - Account
+    put:
+      consumes:
+      - application/json
+      description: Replace all fields of the current user's account with provided
+        values
+      parameters:
+      - description: Full account details to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/accounts.UpdateAccountRequestPut'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/accounts.UpdateAccountResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Update full account info
       tags:
       - Account
   /auth/login:
