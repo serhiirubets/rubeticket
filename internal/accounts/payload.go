@@ -25,10 +25,10 @@ type UpdateAccountRequestPatch struct {
 }
 
 type UpdateAccountRequestPut struct {
-	FirstName string       `json:"firstName"`
-	LastName  string       `json:"lastName"`
-	Gender    users.Gender `json:"gender"`
-	Birthday  time.Time    `json:"birthday"`
+	FirstName string       `json:"firstName" validate:"required,alphaunicode"`
+	LastName  string       `json:"lastName" validate:"required,alphaunicode"`
+	Gender    users.Gender `json:"gender" validate:"required,oneof=male female"`
+	Birthday  time.Time    `json:"birthday" validate:"required"`
 	PhotoUrl  string       `json:"photoUrl"`
 	Address   string       `json:"address"`
 }

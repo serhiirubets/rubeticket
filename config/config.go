@@ -31,9 +31,9 @@ func LoadConfig() *Config {
 		log.Println("Error loading .env file")
 	}
 
-	maxOpenConnections := convert.StringToInt(os.Getenv("MaxOpenConnections"), 10)
-	maxIdleConnections := convert.StringToInt(os.Getenv("MaxIdleConnections"), 10)
-	maxLifetimeConnectionsInMinutes := convert.StringToInt(os.Getenv("MaxLifetimeConnectionsInMinutes"), 1)
+	maxOpenConnections := convert.StringToInt(os.Getenv("MAX_OPEN_CONNECTIONS"), 10)
+	maxIdleConnections := convert.StringToInt(os.Getenv("MAX_IDLE_CONNECTIONS"), 10)
+	maxLifetimeConnectionsInMinutes := convert.StringToInt(os.Getenv("MAX_LIFE_TIME_CONNECTIONS_IN_MINUTES"), 1)
 
 	return &Config{
 		Db: DbConfig{
