@@ -2,13 +2,14 @@ package accounts
 
 import (
 	"github.com/serhiirubets/rubeticket/config"
-	"github.com/serhiirubets/rubeticket/internal/file"
-	"github.com/serhiirubets/rubeticket/internal/users"
-	"github.com/serhiirubets/rubeticket/pkg/fileuploader"
-	"github.com/serhiirubets/rubeticket/pkg/log"
-	"github.com/serhiirubets/rubeticket/pkg/middleware"
-	"github.com/serhiirubets/rubeticket/pkg/req"
-	"github.com/serhiirubets/rubeticket/pkg/res"
+	"github.com/serhiirubets/rubeticket/internal/app/file"
+	"github.com/serhiirubets/rubeticket/internal/app/fileuploader"
+	"github.com/serhiirubets/rubeticket/internal/app/users"
+	"github.com/serhiirubets/rubeticket/internal/pkg/log"
+	"github.com/serhiirubets/rubeticket/internal/pkg/middleware"
+	"github.com/serhiirubets/rubeticket/internal/pkg/req"
+	"github.com/serhiirubets/rubeticket/internal/pkg/res"
+	"mime/multipart"
 	"net/http"
 )
 
@@ -37,10 +38,11 @@ func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
 		FileRepository: deps.FileRepository,
 	}
 
-	router.Handle("GET /account", middleware.Auth(handler.GetAccount(), deps.Config))
-	router.Handle("PATCH /account", middleware.Auth(handler.UpdateAccountPatch(), deps.Config))
-	router.Handle("PUT /account", middleware.Auth(handler.UpdateAccountPut(), deps.Config))
-	router.Handle("POST /account/photo", middleware.Auth(handler.UploadPhoto(), deps.Config))
+	router.Handle("GET /account", middleware.Auth(handler.GetAccount(), deps.Config, deps.Logger))
+	router.Handle("PATCH /account", middleware.Auth(handler.UpdateAccountPatch(), deps.Config, deps.Logger))
+	router.Handle("PUT /account", middleware.Auth(handler.UpdateAccountPut(), deps.Config, deps.Logger))
+	router.Handle("POST /account/photo", middleware.Auth(handler.UploadPhoto(), deps.Config, deps.Logger))
+	router.Handle("GET /uploads/{fileName}", middleware.Auth(handler.GetPhoto(), deps.Config, deps.Logger))
 }
 
 // GetAccount godoc
@@ -52,16 +54,27 @@ func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
 // @Success 200 {object} GetAccountResponse "Success"
 // @Failure 401 {object} string "Not authorized"
 // @Router /account [get]
-func (handler *AccountHandler) GetAccount() http.Handler {
+func (handler *AccountHandler) GetAccount() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		email, _ := r.Context().Value(middleware.ContextEmailKey).(string)
+		authData, _ := middleware.GetAuthData(r)
 
-		user, userErr := handler.UserRepository.GetByEmail(email)
+		user, userErr := handler.UserRepository.GetByEmail(authData.Email)
 
 		if userErr != nil {
 			handler.Logger.Error("Error getting user by email", userErr.Error())
 			res.Json(w, "Invalid credentials", http.StatusUnauthorized)
 			return
+		}
+
+		var photo file.File
+		photoErr := handler.FileUploader.DB.
+			Where("user_id = ? AND purpose = ?", authData.UserID, "profile").
+			First(&photo).Error
+
+		photoUrl := ""
+
+		if photoErr == nil {
+			photoUrl = photo.FilePath
 		}
 
 		body := GetAccountResponse{
@@ -70,6 +83,7 @@ func (handler *AccountHandler) GetAccount() http.Handler {
 			LastName:  user.LastName,
 			Gender:    user.Gender,
 			Birthday:  user.Birthday,
+			PhotoUrl:  photoUrl,
 		}
 
 		res.Json(w, body, http.StatusOK)
@@ -89,15 +103,9 @@ func (handler *AccountHandler) GetAccount() http.Handler {
 // @Failure 401 {object} string "Not authorized"
 // @Failure 500 {object} string "Internal server error"
 // @Router /account [patch]
-func (handler *AccountHandler) UpdateAccountPatch() http.Handler {
+func (handler *AccountHandler) UpdateAccountPatch() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Извлекаем email из контекста (добавлен middleware.Auth)
-		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
-		if !ok {
-			handler.Logger.Error("Email not found in context")
-			res.Json(w, "Not authorized", http.StatusUnauthorized)
-			return
-		}
+		authData, _ := middleware.GetAuthData(r)
 
 		body, err := req.HandleBody[UpdateAccountRequestPatch](&w, r)
 
@@ -105,7 +113,7 @@ func (handler *AccountHandler) UpdateAccountPatch() http.Handler {
 			return
 		}
 
-		user, err := handler.UserRepository.GetByEmail(email)
+		user, err := handler.UserRepository.GetByEmail(authData.Email)
 		if err != nil {
 			handler.Logger.Error("Error getting user by email", err.Error())
 			res.Json(w, "Invalid credentials", http.StatusUnauthorized)
@@ -165,14 +173,9 @@ func (handler *AccountHandler) UpdateAccountPatch() http.Handler {
 // @Failure 401 {object} string "Not authorized"
 // @Failure 500 {object} string "Internal server error"
 // @Router /account [put]
-func (handler *AccountHandler) UpdateAccountPut() http.Handler {
+func (handler *AccountHandler) UpdateAccountPut() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
-		if !ok {
-			handler.Logger.Error("Email not found in context")
-			res.Json(w, "Not authorized", http.StatusUnauthorized)
-			return
-		}
+		authData, _ := middleware.GetAuthData(r)
 
 		body, errBody := req.HandleBody[UpdateAccountRequestPut](&w, r)
 
@@ -180,7 +183,7 @@ func (handler *AccountHandler) UpdateAccountPut() http.Handler {
 			return
 		}
 
-		user, errUser := handler.UserRepository.GetByEmail(email)
+		user, errUser := handler.UserRepository.GetByEmail(authData.Email)
 		if errUser != nil {
 			handler.Logger.Error("Error getting user by email", errUser.Error())
 			res.Json(w, "Invalid credentials", http.StatusUnauthorized)
@@ -222,14 +225,9 @@ func (handler *AccountHandler) UpdateAccountPut() http.Handler {
 // @Failure 401 {object} string "Not authorized"
 // @Failure 500 {object} string "Internal server error"
 // @Router /account/photo [post]
-func (handler *AccountHandler) UploadPhoto() http.Handler {
+func (handler *AccountHandler) UploadPhoto() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authData, ok := r.Context().Value(middleware.AuthKey).(middleware.AuthContextData)
-		if !ok {
-			handler.Logger.Error("Auth data not found in context")
-			res.Json(w, "Not authorized", http.StatusUnauthorized)
-			return
-		}
+		authData, _ := middleware.GetAuthData(r)
 
 		r.Body = http.MaxBytesReader(w, r.Body, handler.FileUploader.MaxSizeMB<<20)
 		if err := r.ParseMultipartForm(handler.FileUploader.MaxSizeMB << 20); err != nil {
@@ -238,20 +236,64 @@ func (handler *AccountHandler) UploadPhoto() http.Handler {
 			return
 		}
 
-		file, header, err := r.FormFile("photo")
+		photo, header, err := r.FormFile("photo")
 		if err != nil {
 			handler.Logger.Error("Failed to get file from form", "error", err.Error())
 			res.Json(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 			return
 		}
-		defer file.Close()
+		defer func(photo multipart.File) {
+			err := photo.Close()
+			if err != nil {
+				handler.Logger.Error("Failed to close file", "error", err.Error())
+			}
+		}(photo)
 
-		fileModel, err := handler.FileUploader.UploadFile(file, header, authData.UserID, "profile")
+		fileModel, err := handler.FileUploader.UploadFile(photo, header, authData.UserID, "profile")
 		if err != nil {
 			res.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		res.Json(w, map[string]string{"message": "Photo uploaded", "uuid": fileModel.UUID}, http.StatusOK)
+	})
+}
+
+// GetPhoto godoc
+// @Summary Get a file by path
+// @Description Retrieve a file by its path for the authenticated user
+// @Tags Account
+// @Security ApiKeyAuth
+// @Produce application/octet-stream
+// @Param fileName path string true "File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)"
+// @Success 200 {file} file "File content"
+// @Failure 400 {object} string "Invalid file path"
+// @Failure 401 {object} string "Not authorized"
+// @Failure 403 {object} string "Forbidden or file not found"
+// @Failure 500 {object} string "Internal server error"
+// @Router /uploads/{fileName} [get]
+func (handler *AccountHandler) GetPhoto() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authData, _ := middleware.GetAuthData(r)
+
+		fileName := r.PathValue("fileName")
+		if fileName == "" {
+			http.Error(w, "Invalid file path", http.StatusBadRequest)
+			return
+		}
+
+		// Check that user is a file owner
+		var fileModel file.File
+		if err := handler.FileUploader.DB.
+			Where("file_path = ? AND user_id = ?", fileName, authData.UserID).
+			First(&fileModel).Error; err != nil {
+			handler.Logger.Warn("Unauthorized file access attempt", "file_path", fileName, "user_id", authData.UserID)
+			http.Error(w, "Forbidden or file not found", http.StatusForbidden)
+			return
+		}
+
+		filePath := "uploads/" + fileModel.FilePath
+
+		http.ServeFile(w, r, filePath)
 	})
 }

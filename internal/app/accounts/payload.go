@@ -1,7 +1,7 @@
 package accounts
 
 import (
-	"github.com/serhiirubets/rubeticket/internal/users"
+	"github.com/serhiirubets/rubeticket/internal/app/users"
 	"time"
 )
 
@@ -20,7 +20,6 @@ type UpdateAccountRequestPatch struct {
 	LastName  *string       `json:"lastName,omitempty"`
 	Gender    *users.Gender `json:"gender,omitempty"`
 	Birthday  *time.Time    `json:"birthday,omitempty"`
-	PhotoUrl  *string       `json:"photoUrl,omitempty"`
 	Address   *string       `json:"address,omitempty"`
 }
 
@@ -29,7 +28,6 @@ type UpdateAccountRequestPut struct {
 	LastName  string       `json:"lastName" validate:"required,alphaunicode"`
 	Gender    users.Gender `json:"gender" validate:"required,oneof=male female"`
 	Birthday  time.Time    `json:"birthday" validate:"required"`
-	PhotoUrl  string       `json:"photoUrl"`
 	Address   string       `json:"address"`
 }
 

@@ -37,5 +37,4 @@ type User struct {
 	Gender       Gender     `gorm:"type:varchar(6);not null" json:"gender"` // (male/female)
 	ActivatedAt  *time.Time `json:"activatedAt"`
 	Status       Status     `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	PhotoUrl     string     `json:"photoUrl"`
 }

@@ -29,8 +29,6 @@ definitions:
         $ref: '#/definitions/users.Gender'
       lastName:
         type: string
-      photoUrl:
-        type: string
     type: object
   accounts.UpdateAccountRequestPut:
     properties:
@@ -41,11 +39,18 @@ definitions:
       firstName:
         type: string
       gender:
-        $ref: '#/definitions/users.Gender'
+        allOf:
+        - $ref: '#/definitions/users.Gender'
+        enum:
+        - male
+        - female
       lastName:
         type: string
-      photoUrl:
-        type: string
+    required:
+    - birthday
+    - firstName
+    - gender
+    - lastName
     type: object
   accounts.UpdateAccountResponse:
     properties:
@@ -219,6 +224,43 @@ paths:
       summary: Update full account info
       tags:
       - Account
+  /account/photo:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a photo file for the current user
+      parameters:
+      - description: Photo file to upload
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a photo
+      tags:
+      - Account
   /auth/login:
     post:
       consumes:
@@ -287,4 +329,41 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /uploads/{fileName}:
+    get:
+      description: Retrieve a file by its path for the authenticated user
+      parameters:
+      - description: File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)
+        in: path
+        name: fileName
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File content
+          schema:
+            type: file
+        "400":
+          description: Invalid file path
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden or file not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get a file by path
+      tags:
+      - Account
 swagger: "2.0"

@@ -1,6 +1,8 @@
 package auth
 
-import "github.com/serhiirubets/rubeticket/internal/users"
+import (
+	"github.com/serhiirubets/rubeticket/internal/app/users"
+)
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`

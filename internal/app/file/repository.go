@@ -1,6 +1,8 @@
 package file
 
-import "github.com/serhiirubets/rubeticket/pkg/db"
+import (
+	"github.com/serhiirubets/rubeticket/internal/pkg/db"
+)
 
 type Repository struct {
 	Db *db.Db

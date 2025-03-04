@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"github.com/serhiirubets/rubeticket/config"
 	_ "github.com/serhiirubets/rubeticket/docs"
-	"github.com/serhiirubets/rubeticket/internal/accounts"
-	"github.com/serhiirubets/rubeticket/internal/auth"
-	"github.com/serhiirubets/rubeticket/internal/file"
-	"github.com/serhiirubets/rubeticket/internal/users"
-	"github.com/serhiirubets/rubeticket/pkg/db"
-	"github.com/serhiirubets/rubeticket/pkg/fileuploader"
-	"github.com/serhiirubets/rubeticket/pkg/log"
-	"github.com/serhiirubets/rubeticket/pkg/middleware"
+	"github.com/serhiirubets/rubeticket/internal/app/accounts"
+	"github.com/serhiirubets/rubeticket/internal/app/auth"
+	"github.com/serhiirubets/rubeticket/internal/app/file"
+	"github.com/serhiirubets/rubeticket/internal/app/fileuploader"
+	"github.com/serhiirubets/rubeticket/internal/app/users"
+	"github.com/serhiirubets/rubeticket/internal/pkg/db"
+	"github.com/serhiirubets/rubeticket/internal/pkg/filestorage"
+	"github.com/serhiirubets/rubeticket/internal/pkg/log"
+	"github.com/serhiirubets/rubeticket/internal/pkg/middleware"
 	"github.com/swaggo/http-swagger"
 	"net/http"
 )
@@ -21,11 +22,14 @@ func App() http.Handler {
 	dbInstance := db.NewDb(conf)
 	logger := log.NewLogrusLogger(conf.LogLevel)
 	router := http.NewServeMux()
-	fileUploader := fileuploader.NewFileUploader(&fileuploader.FileUploaderDeps{
+	storage := filestorage.NewLocalStorage("uploads")
+
+	fileUploader := fileuploader.NewFileUploader(&fileuploader.Deps{
 		Logger:       logger,
-		UploadDir:    "uploads",
+		DB:           dbInstance,
 		MaxSizeMB:    10,
 		AllowedTypes: []string{"image/"},
+		Storage:      storage,
 	})
 
 	// Middlewares

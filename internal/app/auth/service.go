@@ -3,7 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"github.com/serhiirubets/rubeticket/internal/users"
+	"github.com/serhiirubets/rubeticket/internal/app/users"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )

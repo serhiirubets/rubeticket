@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/serhiirubets/rubeticket/pkg/convert"
+	"github.com/serhiirubets/rubeticket/internal/pkg/convert"
 	"log"
 	"os"
 )

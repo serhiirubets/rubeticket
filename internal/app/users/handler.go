@@ -1,8 +1,8 @@
 package users
 
 import (
-	"github.com/serhiirubets/rubeticket/pkg/log"
-	"github.com/serhiirubets/rubeticket/pkg/res"
+	"github.com/serhiirubets/rubeticket/internal/pkg/log"
+	"github.com/serhiirubets/rubeticket/internal/pkg/res"
 	"net/http"
 )
 

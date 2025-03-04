@@ -1,7 +1,7 @@
 package req
 
 import (
-	"github.com/serhiirubets/rubeticket/pkg/res"
+	"github.com/serhiirubets/rubeticket/internal/pkg/res"
 	"net/http"
 )
 

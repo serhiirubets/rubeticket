@@ -160,6 +160,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/account/photo": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload a photo file for the current user",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Upload a photo",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Photo file to upload",
+                        "name": "photo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Login user, set token in cookie and return success: true",
@@ -263,6 +321,64 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/uploads/{fileName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve a file by its path for the authenticated user",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Get a file by path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)",
+                        "name": "fileName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File content",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden or file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -309,14 +425,17 @@ const docTemplate = `{
                 },
                 "lastName": {
                     "type": "string"
-                },
-                "photoUrl": {
-                    "type": "string"
                 }
             }
         },
         "accounts.UpdateAccountRequestPut": {
             "type": "object",
+            "required": [
+                "birthday",
+                "firstName",
+                "gender",
+                "lastName"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -328,12 +447,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "gender": {
-                    "$ref": "#/definitions/users.Gender"
+                    "enum": [
+                        "male",
+                        "female"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/users.Gender"
+                        }
+                    ]
                 },
                 "lastName": {
-                    "type": "string"
-                },
-                "photoUrl": {
                     "type": "string"
                 }
             }
