@@ -53,15 +53,15 @@ func (service *AuthService) Register(payload *RegisterRequest) (uint, error) {
 	return createdUser.ID, nil
 }
 
-func (service *AuthService) Login(email, password string) (string, error) {
+func (service *AuthService) Login(email, password string) (*LoginResponseDto, error) {
 	existedUser, _ := service.UserRepository.GetByEmail(email)
 	if existedUser == nil {
-		return "", errors.New(ErrWrongCredentials)
+		return nil, errors.New(ErrWrongCredentials)
 	}
 
 	err := bcrypt.CompareHashAndPassword([]byte(existedUser.PasswordHash), []byte(password))
 	if err != nil {
-		return "", errors.New(ErrWrongCredentials)
+		return nil, errors.New(ErrWrongCredentials)
 	}
-	return email, nil
+	return &LoginResponseDto{Id: existedUser.ID, Email: email}, nil
 }

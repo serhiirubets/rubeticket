@@ -2,7 +2,9 @@ package accounts
 
 import (
 	"github.com/serhiirubets/rubeticket/config"
+	"github.com/serhiirubets/rubeticket/internal/file"
 	"github.com/serhiirubets/rubeticket/internal/users"
+	"github.com/serhiirubets/rubeticket/pkg/fileuploader"
 	"github.com/serhiirubets/rubeticket/pkg/log"
 	"github.com/serhiirubets/rubeticket/pkg/middleware"
 	"github.com/serhiirubets/rubeticket/pkg/req"
@@ -14,12 +16,16 @@ type AccountHandlerDeps struct {
 	UserRepository *users.UserRepository
 	Logger         log.ILogger
 	Config         *config.Config
+	FileUploader   *fileuploader.FileUploader
+	FileRepository *file.Repository
 }
 
 type AccountHandler struct {
 	UserRepository *users.UserRepository
 	Logger         log.ILogger
 	Config         *config.Config
+	FileUploader   *fileuploader.FileUploader
+	FileRepository *file.Repository
 }
 
 func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
@@ -27,11 +33,14 @@ func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
 		UserRepository: deps.UserRepository,
 		Logger:         deps.Logger,
 		Config:         deps.Config,
+		FileUploader:   deps.FileUploader,
+		FileRepository: deps.FileRepository,
 	}
 
 	router.Handle("GET /account", middleware.Auth(handler.GetAccount(), deps.Config))
 	router.Handle("PATCH /account", middleware.Auth(handler.UpdateAccountPatch(), deps.Config))
 	router.Handle("PUT /account", middleware.Auth(handler.UpdateAccountPut(), deps.Config))
+	router.Handle("POST /account/photo", middleware.Auth(handler.UploadPhoto(), deps.Config))
 }
 
 // GetAccount godoc
@@ -197,5 +206,52 @@ func (handler *AccountHandler) UpdateAccountPut() http.Handler {
 			Birthday:  user.Birthday,
 		}
 		res.Json(w, response, http.StatusOK)
+	})
+}
+
+// UploadPhoto godoc
+// @Summary Upload a photo
+// @Description Upload a photo file for the current user
+// @Tags Account
+// @Security ApiKeyAuth
+// @Accept multipart/form-data
+// @Produce json
+// @Param photo formData file true "Photo file to upload"
+// @Success 200 {object} map[string]string "Success"
+// @Failure 400 {object} string "Bad request"
+// @Failure 401 {object} string "Not authorized"
+// @Failure 500 {object} string "Internal server error"
+// @Router /account/photo [post]
+func (handler *AccountHandler) UploadPhoto() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authData, ok := r.Context().Value(middleware.AuthKey).(middleware.AuthContextData)
+		if !ok {
+			handler.Logger.Error("Auth data not found in context")
+			res.Json(w, "Not authorized", http.StatusUnauthorized)
+			return
+		}
+
+		r.Body = http.MaxBytesReader(w, r.Body, handler.FileUploader.MaxSizeMB<<20)
+		if err := r.ParseMultipartForm(handler.FileUploader.MaxSizeMB << 20); err != nil {
+			handler.Logger.Error("Failed to parse multipart form", "error", err.Error())
+			res.Json(w, "Bad request: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		file, header, err := r.FormFile("photo")
+		if err != nil {
+			handler.Logger.Error("Failed to get file from form", "error", err.Error())
+			res.Json(w, "Bad request: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		fileModel, err := handler.FileUploader.UploadFile(file, header, authData.UserID, "profile")
+		if err != nil {
+			res.Json(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		res.Json(w, map[string]string{"message": "Photo uploaded", "uuid": fileModel.UUID}, http.StatusOK)
 	})
 }

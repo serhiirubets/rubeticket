@@ -11,7 +11,15 @@ type key string
 
 const (
 	ContextEmailKey key = "ContextEmailKey"
+	ContextIdKey    key = "ContextIdKey"
 )
+
+type AuthContextData struct {
+	Email  string
+	UserID uint
+}
+
+const AuthKey = "authData"
 
 func writeUnathed(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
@@ -37,7 +45,13 @@ func Auth(next http.Handler, conf *config.Config) http.Handler {
 			writeUnathed(w)
 			return
 		}
-		ctx := context.WithValue(r.Context(), ContextEmailKey, data.Email)
+
+		authData := AuthContextData{
+			Email:  data.Email,
+			UserID: data.Id,
+		}
+
+		ctx := context.WithValue(r.Context(), AuthKey, authData)
 		req := r.WithContext(ctx)
 		next.ServeHTTP(w, req)
 	})

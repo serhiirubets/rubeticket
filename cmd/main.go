@@ -6,8 +6,10 @@ import (
 	_ "github.com/serhiirubets/rubeticket/docs"
 	"github.com/serhiirubets/rubeticket/internal/accounts"
 	"github.com/serhiirubets/rubeticket/internal/auth"
+	"github.com/serhiirubets/rubeticket/internal/file"
 	"github.com/serhiirubets/rubeticket/internal/users"
 	"github.com/serhiirubets/rubeticket/pkg/db"
+	"github.com/serhiirubets/rubeticket/pkg/fileuploader"
 	"github.com/serhiirubets/rubeticket/pkg/log"
 	"github.com/serhiirubets/rubeticket/pkg/middleware"
 	"github.com/swaggo/http-swagger"
@@ -19,9 +21,19 @@ func App() http.Handler {
 	dbInstance := db.NewDb(conf)
 	logger := log.NewLogrusLogger(conf.LogLevel)
 	router := http.NewServeMux()
+	fileUploader := fileuploader.NewFileUploader(&fileuploader.FileUploaderDeps{
+		Logger:       logger,
+		UploadDir:    "uploads",
+		MaxSizeMB:    10,
+		AllowedTypes: []string{"image/"},
+	})
+
+	// Middlewares
+	middlewares := middleware.Chain(middleware.CORS)
 
 	// Repositories
 	usersRepository := users.NewUserRepository(dbInstance)
+	fileRepository := file.NewRepository(dbInstance)
 
 	// Services
 	authService := auth.NewAuthService(usersRepository)
@@ -42,14 +54,15 @@ func App() http.Handler {
 		Logger:         logger,
 		UserRepository: usersRepository,
 		Config:         conf,
+		FileUploader:   fileUploader,
+		FileRepository: fileRepository,
 	})
-
-	// Middlewares
-	middlewares := middleware.Chain(middleware.CORS)
 
 	router.Handle("/swagger/", httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:7777/swagger/doc.json"),
 	))
+
+	router.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 
 	return middlewares(router)
 }
