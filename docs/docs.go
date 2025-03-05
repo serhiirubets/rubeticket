@@ -19,7 +19,65 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account": {
+        "/uploads/{fileName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve a file by its path for the authenticated user",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Get a file by path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)",
+                        "name": "fileName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File content",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden or file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account": {
             "get": {
                 "security": [
                     {
@@ -160,7 +218,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/account/photo": {
+        "/v1/account/photo": {
             "post": {
                 "security": [
                     {
@@ -218,7 +276,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login": {
+        "/v1/auth/login": {
             "post": {
                 "description": "Login user, set token in cookie and return success: true",
                 "consumes": [
@@ -270,7 +328,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
+        "/v1/auth/register": {
             "post": {
                 "description": "Register a new user and return authentication token",
                 "consumes": [
@@ -309,64 +367,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/uploads/{fileName}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieve a file by its path for the authenticated user",
-                "produces": [
-                    "application/octet-stream"
-                ],
-                "tags": [
-                    "Account"
-                ],
-                "summary": "Get a file by path",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)",
-                        "name": "fileName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "File content",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid file path",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Not authorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden or file not found",
                         "schema": {
                             "type": "string"
                         }

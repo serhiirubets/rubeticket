@@ -32,7 +32,14 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	err := godotenv.Load()
+	env := os.Getenv("ENV")
+	var err error
+	if env == "test" {
+		err = godotenv.Load(".test.env")
+	} else {
+		err = godotenv.Load(".env")
+	}
+
 	if err != nil {
 		log.Println("Error loading .env file")
 	}

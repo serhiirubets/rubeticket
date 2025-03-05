@@ -134,7 +134,44 @@ info:
   title: Concert booking API
   version: "1.0"
 paths:
-  /account:
+  /uploads/{fileName}:
+    get:
+      description: Retrieve a file by its path for the authenticated user
+      parameters:
+      - description: File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)
+        in: path
+        name: fileName
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File content
+          schema:
+            type: file
+        "400":
+          description: Invalid file path
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden or file not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get a file by path
+      tags:
+      - Account
+  /v1/account:
     get:
       description: Return information about current user
       produces:
@@ -224,7 +261,7 @@ paths:
       summary: Update full account info
       tags:
       - Account
-  /account/photo:
+  /v1/account/photo:
     post:
       consumes:
       - multipart/form-data
@@ -261,7 +298,7 @@ paths:
       summary: Upload a photo
       tags:
       - Account
-  /auth/login:
+  /v1/auth/login:
     post:
       consumes:
       - application/json
@@ -295,7 +332,7 @@ paths:
       summary: Login a user
       tags:
       - auth
-  /auth/register:
+  /v1/auth/register:
     post:
       consumes:
       - application/json
@@ -329,41 +366,4 @@ paths:
       summary: Register a new user
       tags:
       - auth
-  /uploads/{fileName}:
-    get:
-      description: Retrieve a file by its path for the authenticated user
-      parameters:
-      - description: File path (e.g., b60b4dd7-6dda-49fc-830f-020fa5fe4817.png)
-        in: path
-        name: fileName
-        required: true
-        type: string
-      produces:
-      - application/octet-stream
-      responses:
-        "200":
-          description: File content
-          schema:
-            type: file
-        "400":
-          description: Invalid file path
-          schema:
-            type: string
-        "401":
-          description: Not authorized
-          schema:
-            type: string
-        "403":
-          description: Forbidden or file not found
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Get a file by path
-      tags:
-      - Account
 swagger: "2.0"

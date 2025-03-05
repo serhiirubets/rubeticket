@@ -1,6 +1,8 @@
 /postgres-data
 .env
+.test.env
 .idea
 .DS_Store
 logs
-uploads
+/uploads
+/postgres-test-data

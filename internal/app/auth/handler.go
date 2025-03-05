@@ -42,7 +42,7 @@ func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal server error"
-// @Router /auth/login [post]
+// @Router /v1/auth/login [post]
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[LoginRequest](&w, r)
@@ -81,7 +81,7 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal server error"
-// @Router /auth/register [post]
+// @Router /v1/auth/register [post]
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[RegisterRequest](&w, r)
