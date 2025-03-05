@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"github.com/serhiirubets/rubeticket/config"
 	_ "github.com/serhiirubets/rubeticket/docs"
 	"github.com/serhiirubets/rubeticket/internal/app/accounts"
 	"github.com/serhiirubets/rubeticket/internal/app/auth"
 	"github.com/serhiirubets/rubeticket/internal/app/file"
 	"github.com/serhiirubets/rubeticket/internal/app/fileuploader"
+	"github.com/serhiirubets/rubeticket/internal/app/uploads"
 	"github.com/serhiirubets/rubeticket/internal/app/users"
 	"github.com/serhiirubets/rubeticket/internal/pkg/db"
 	"github.com/serhiirubets/rubeticket/internal/pkg/filestorage"
@@ -15,22 +16,23 @@ import (
 	"github.com/serhiirubets/rubeticket/internal/pkg/middleware"
 	"github.com/swaggo/http-swagger"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
-func App() http.Handler {
-	conf := config.LoadConfig()
-	dbInstance := db.NewDb(conf)
-	logger := log.NewLogrusLogger(conf.LogLevel)
-	router := http.NewServeMux()
-	storage := filestorage.NewLocalStorage("uploads")
+type App struct {
+	Router http.Handler
+	Logger log.ILogger
+	Server *http.Server
+}
 
-	fileUploader := fileuploader.NewFileUploader(&fileuploader.Deps{
-		Logger:       logger,
-		DB:           dbInstance,
-		MaxSizeMB:    10,
-		AllowedTypes: []string{"image/"},
-		Storage:      storage,
-	})
+func InitApp(conf *config.Config, logger log.ILogger) (http.Handler, error) {
+	router := http.NewServeMux()
+	v1Router := http.NewServeMux()
+	dbInstance := db.NewDb(conf)
+	storage := filestorage.NewLocalStorage("uploads")
 
 	// Middlewares
 	middlewares := middleware.Chain(middleware.CORS)
@@ -42,24 +44,39 @@ func App() http.Handler {
 	// Services
 	authService := auth.NewAuthService(usersRepository)
 
+	// Utils
+	fileUploader := fileuploader.NewFileUploader(&fileuploader.Deps{
+		Logger:         logger,
+		DB:             dbInstance,
+		MaxSizeMB:      10,
+		AllowedTypes:   []string{"image/"},
+		Storage:        storage,
+		FileRepository: fileRepository,
+	})
+
 	// Handlers
-	users.NewUserHandler(router, &users.UserHandlerDeps{
+	users.NewUserHandler(v1Router, &users.UserHandlerDeps{
 		UserRepository: usersRepository,
 		Logger:         logger,
 	})
 
-	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
+	auth.NewAuthHandler(v1Router, &auth.AuthHandlerDeps{
 		Config:      conf,
 		Logger:      logger,
 		AuthService: authService,
 	})
 
-	accounts.NewAccountHandler(router, &accounts.AccountHandlerDeps{
+	accounts.NewAccountHandler(v1Router, &accounts.AccountHandlerDeps{
 		Logger:         logger,
 		UserRepository: usersRepository,
 		Config:         conf,
 		FileUploader:   fileUploader,
-		FileRepository: fileRepository,
+	})
+
+	uploads.NewUploadsHandler(router, &uploads.HandlerDeps{
+		Logger:       logger,
+		Config:       conf,
+		FileUploader: fileUploader,
 	})
 
 	router.Handle("/swagger/", httpSwagger.Handler(
@@ -68,7 +85,9 @@ func App() http.Handler {
 
 	router.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 
-	return middlewares(router)
+	router.Handle("/v1/", http.StripPrefix("/v1", v1Router))
+
+	return middlewares(router), nil
 }
 
 // @title Concert booking API
@@ -79,17 +98,43 @@ func App() http.Handler {
 // @BasePath /v1
 // @host localhost:777
 func main() {
-	router := App()
+	conf := config.LoadConfig()
+	logger := log.NewLogrusLogger(conf.LogLevel)
+	router, initErr := InitApp(conf, logger)
 
-	server := http.Server{
-		Addr:    ":7777",
+	if initErr != nil {
+		logger.Error("Server error: %v\n ", initErr)
+		os.Exit(1)
+	}
+
+	port := conf.App.Port
+
+	app := http.Server{
+		Addr:    ":" + port,
 		Handler: router,
 	}
 
-	fmt.Println("Server is listening on port 7777")
-	err := server.ListenAndServe()
-	if err != nil {
-		fmt.Printf("Server error: %v\n ", err)
-		return
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		logger.Info("Server is listening on port", "port", port)
+		if err := app.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Server failed to start", "error", err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	<-stop
+	logger.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := app.Shutdown(ctx); err != nil {
+		logger.Error("Server shutdown failed", "error", err.Error())
+		os.Exit(1)
 	}
+
+	logger.Info("Server stopped gracefully")
 }

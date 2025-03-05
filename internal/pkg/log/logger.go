@@ -2,7 +2,7 @@ package log
 
 import (
 	"github.com/sirupsen/logrus"
-	"gopkg.in/natefinch/lumberjack.v2"
+	"os"
 )
 
 type LogrusLogger struct {
@@ -30,17 +30,20 @@ func (l *LogrusLogger) WithFields(fields WithFields) ILogger {
 }
 
 func NewLogrusLogger(logLevel string) ILogger {
-
-	lumberjackLogger := &lumberjack.Logger{
-		Filename:   "logs/app.log",
-		MaxSize:    100,
-		MaxBackups: 3,
-		MaxAge:     14,
-		Compress:   true,
-	}
-
 	logrusLogger := logrus.New()
-	logrusLogger.SetOutput(lumberjackLogger)
+
+	// TODO: Temporary using standard console, instead of file
+	//lumberjackLogger := &lumberjack.Logger{
+	//	Filename:   "logs/app.log",
+	//	MaxSize:    100,
+	//	MaxBackups: 3,
+	//	MaxAge:     14,
+	//	Compress:   true,
+	//}
+
+	//logrusLogger.SetOutput(lumberjackLogger)
+
+	logrusLogger.SetOutput(os.Stdout)
 	logrusLogger.SetFormatter(&logrus.JSONFormatter{})
 
 	level, err := logrus.ParseLevel(logLevel)

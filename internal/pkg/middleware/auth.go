@@ -37,9 +37,10 @@ func IsAuth(next http.Handler, conf *config.Config) http.Handler {
 			writeUnathed(w)
 			return
 		}
-		isValid, data := jwt.NewJWT(conf.Auth.Secret).Parse(token)
+		data, parseErr := jwt.NewJWT(conf.Auth.Secret).Parse(token)
 
-		if !isValid {
+		if parseErr != nil {
+			// TODO: add logger
 			writeUnathed(w)
 			return
 		}

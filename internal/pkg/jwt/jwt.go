@@ -1,6 +1,9 @@
 package jwt
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"fmt"
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type Payload struct {
 	Email string
@@ -26,17 +29,43 @@ func (j *JWT) Create(data *Payload) (string, error) {
 	return s, nil
 }
 
-func (j *JWT) Parse(token string) (bool, *Payload) {
+func (j *JWT) Parse(token string) (*Payload, error) {
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.Secret), nil
 	})
 
 	if err != nil {
 		println(err.Error())
-		return false, nil
+		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
 
-	email := t.Claims.(jwt.MapClaims)["email"].(string)
-	id := t.Claims.(jwt.MapClaims)["id"].(float64)
-	return t.Valid, &Payload{Email: email, Id: uint(id)}
+	if !t.Valid {
+		return nil, fmt.Errorf("token is invalid")
+	}
+
+	claims, ok := t.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("invalid claims type, expected jwt.MapClaims")
+	}
+
+	email, ok := claims["email"]
+	if !ok {
+		return nil, fmt.Errorf("email field is missing")
+	}
+
+	emailStr, ok := email.(string)
+	if !ok {
+		return nil, fmt.Errorf("email field must be a string")
+	}
+
+	id, ok := claims["id"]
+	if !ok {
+		return nil, fmt.Errorf("id field is missing")
+	}
+	idFloat, ok := id.(float64)
+	if !ok {
+		return nil, fmt.Errorf("id field must be a number")
+	}
+
+	return &Payload{Email: emailStr, Id: uint(idFloat)}, nil
 }

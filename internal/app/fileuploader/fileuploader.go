@@ -13,28 +13,31 @@ import (
 )
 
 type Deps struct {
-	Logger       log.ILogger
-	DB           *db.Db
-	Storage      filestorage.Storage
-	AllowedTypes []string
-	MaxSizeMB    int64
+	Logger         log.ILogger
+	DB             *db.Db
+	Storage        filestorage.Storage
+	AllowedTypes   []string
+	MaxSizeMB      int64
+	FileRepository *file.Repository
 }
 
 type FileUploader struct {
-	Logger       log.ILogger
-	DB           *db.Db
-	Storage      filestorage.Storage
-	AllowedTypes []string
-	MaxSizeMB    int64
+	Logger         log.ILogger
+	DB             *db.Db
+	Storage        filestorage.Storage
+	AllowedTypes   []string
+	MaxSizeMB      int64
+	FileRepository *file.Repository
 }
 
 func NewFileUploader(deps *Deps) *FileUploader {
 	return &FileUploader{
-		Logger:       deps.Logger,
-		DB:           deps.DB,
-		Storage:      deps.Storage,
-		AllowedTypes: deps.AllowedTypes,
-		MaxSizeMB:    deps.MaxSizeMB,
+		Logger:         deps.Logger,
+		DB:             deps.DB,
+		Storage:        deps.Storage,
+		AllowedTypes:   deps.AllowedTypes,
+		MaxSizeMB:      deps.MaxSizeMB,
+		FileRepository: deps.FileRepository,
 	}
 }
 
@@ -65,6 +68,8 @@ func (f *FileUploader) UploadFile(uploadFile multipart.File, header *multipart.F
 		FilePath: filePath,
 		Purpose:  purpose,
 	}
+
+	// TODO: Move to the file repository
 	if err := f.DB.Create(fileModel).Error; err != nil {
 		f.Logger.Error("Failed to save file metadata to DB", "error", err.Error())
 		os.Remove(filePath)

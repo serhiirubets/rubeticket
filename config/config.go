@@ -18,11 +18,17 @@ type AuthConfig struct {
 	Secret string
 }
 
+type AppConfig struct {
+	Port string
+	Host string
+}
+
 type Config struct {
 	Db       DbConfig
 	Auth     AuthConfig
 	LogLevel string
 	Env      string
+	App      AppConfig
 }
 
 func LoadConfig() *Config {
@@ -47,5 +53,9 @@ func LoadConfig() *Config {
 		},
 		LogLevel: os.Getenv("LOG_LEVEL"),
 		Env:      os.Getenv("ENV"),
+		App: AppConfig{
+			Port: os.Getenv("PORT"),
+			Host: os.Getenv("HOST"),
+		},
 	}
 }
