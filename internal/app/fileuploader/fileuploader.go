@@ -2,32 +2,33 @@ package fileuploader
 
 import (
 	"errors"
+	"mime/multipart"
+	"os"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/serhiirubets/rubeticket/internal/app/file"
 	"github.com/serhiirubets/rubeticket/internal/pkg/db"
 	"github.com/serhiirubets/rubeticket/internal/pkg/filestorage"
 	"github.com/serhiirubets/rubeticket/internal/pkg/log"
-	"mime/multipart"
-	"os"
-	"strings"
 )
 
 type Deps struct {
 	Logger         log.ILogger
-	DB             *db.Db
+	DB             db.IDb
 	Storage        filestorage.Storage
 	AllowedTypes   []string
 	MaxSizeMB      int64
-	FileRepository *file.Repository
+	FileRepository file.IFileRepository
 }
 
 type FileUploader struct {
 	Logger         log.ILogger
-	DB             *db.Db
+	DB             db.IDb
 	Storage        filestorage.Storage
 	AllowedTypes   []string
 	MaxSizeMB      int64
-	FileRepository *file.Repository
+	FileRepository file.IFileRepository
 }
 
 func NewFileUploader(deps *Deps) *FileUploader {
@@ -69,12 +70,12 @@ func (f *FileUploader) UploadFile(uploadFile multipart.File, header *multipart.F
 		Purpose:  purpose,
 	}
 
-	// TODO: Move to the file repository
-	if err := f.DB.Create(fileModel).Error; err != nil {
+	createdFile, err := f.FileRepository.CreateWithStorage(fileModel)
+	if err != nil {
 		f.Logger.Error("Failed to save file metadata to DB", "error", err.Error())
 		os.Remove(filePath)
 		return nil, err
 	}
 
-	return fileModel, nil
+	return createdFile, nil
 }

@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	"github.com/serhiirubets/rubeticket/app"
-	"github.com/serhiirubets/rubeticket/config"
-	_ "github.com/serhiirubets/rubeticket/docs"
-	"github.com/serhiirubets/rubeticket/internal/pkg/log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/serhiirubets/rubeticket/app"
+	"github.com/serhiirubets/rubeticket/config"
+	_ "github.com/serhiirubets/rubeticket/docs"
+	"github.com/serhiirubets/rubeticket/internal/pkg/log"
 )
 
 // @title Concert booking API
@@ -41,7 +42,7 @@ func main() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		logger.Info("Server is listening on port", "port", port)
+		logger.Info("Server is listening on port ", port)
 		if err := app.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("Server failed to start", "error", err.Error())
 			os.Exit(1)

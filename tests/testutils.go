@@ -7,7 +7,7 @@ import (
 )
 
 type TestEnv struct {
-	DB     *db.Db
+	DB     db.IDb
 	Logger log.ILogger
 	Conf   *config.Config
 }

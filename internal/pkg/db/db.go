@@ -1,20 +1,21 @@
 package db
 
 import (
+	"log"
+	"os"
+	"time"
+
 	configs "github.com/serhiirubets/rubeticket/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
-	"os"
-	"time"
 )
 
 type Db struct {
 	*gorm.DB
 }
 
-func NewDb(conf *configs.Config) *Db {
+func NewDb(conf *configs.Config) IDb {
 	var gormLogger logger.Interface
 
 	if conf.Env == "dev" {
@@ -47,15 +48,15 @@ func NewDb(conf *configs.Config) *Db {
 		panic(err)
 	}
 
-	sqlDB, err := db.DB()
+	pgDb, err := db.DB()
 	if err != nil {
 		panic(err)
 	}
-	sqlDB.SetMaxOpenConns(conf.Db.MaxOpenConnections)
+	pgDb.SetMaxOpenConns(conf.Db.MaxOpenConnections)
 
-	sqlDB.SetMaxIdleConns(conf.Db.MaxIdleConnections)
+	pgDb.SetMaxIdleConns(conf.Db.MaxIdleConnections)
 
-	sqlDB.SetConnMaxLifetime(time.Duration(conf.Db.MaxLifetimeConnectionsInMinutes) * time.Minute)
+	pgDb.SetConnMaxLifetime(time.Duration(conf.Db.MaxLifetimeConnectionsInMinutes) * time.Minute)
 
 	return &Db{db}
 }

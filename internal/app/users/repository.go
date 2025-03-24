@@ -5,10 +5,10 @@ import (
 )
 
 type UserRepository struct {
-	DB *db.Db
+	DB db.IDb
 }
 
-func NewUserRepository(db *db.Db) *UserRepository {
+func NewUserRepository(db db.IDb) *UserRepository {
 	return &UserRepository{
 		DB: db,
 	}
@@ -42,4 +42,8 @@ func (repo *UserRepository) GetById(id string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (repo *UserRepository) Update(user *User, updates map[string]interface{}) error {
+	return repo.DB.Model(user).Updates(updates).Error
 }

@@ -6,3 +6,5 @@
 logs
 /uploads
 /postgres-test-data
+/.cursor
+.vscode

@@ -1,6 +1,9 @@
 package accounts
 
 import (
+	"mime/multipart"
+	"net/http"
+
 	"github.com/serhiirubets/rubeticket/config"
 	"github.com/serhiirubets/rubeticket/internal/app/file"
 	"github.com/serhiirubets/rubeticket/internal/app/fileuploader"
@@ -9,8 +12,6 @@ import (
 	"github.com/serhiirubets/rubeticket/internal/pkg/middleware"
 	"github.com/serhiirubets/rubeticket/internal/pkg/req"
 	"github.com/serhiirubets/rubeticket/internal/pkg/res"
-	"mime/multipart"
-	"net/http"
 )
 
 type AccountHandlerDeps struct {
@@ -138,7 +139,7 @@ func (handler *AccountHandler) UpdateAccountPatch() http.HandlerFunc {
 			return
 		}
 
-		if err := handler.UserRepository.DB.Model(&user).Updates(updates).Error; err != nil {
+		if err := handler.UserRepository.Update(user, updates); err != nil {
 			handler.Logger.Error("Failed to update user", err.Error())
 			res.Json(w, "Internal server error", http.StatusInternalServerError)
 			return
