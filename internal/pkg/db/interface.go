@@ -10,4 +10,6 @@ type IDb interface {
 	Where(query interface{}, args ...interface{}) *gorm.DB
 	Save(value interface{}) *gorm.DB
 	Model(value interface{}) *gorm.DB
+	Offset(offset int) *gorm.DB
+	Delete(value interface{}, conds ...interface{}) *gorm.DB
 }

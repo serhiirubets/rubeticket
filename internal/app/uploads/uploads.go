@@ -1,12 +1,13 @@
 package uploads
 
 import (
+	"net/http"
+
 	"github.com/serhiirubets/rubeticket/config"
 	"github.com/serhiirubets/rubeticket/internal/app/file"
 	"github.com/serhiirubets/rubeticket/internal/app/fileuploader"
 	"github.com/serhiirubets/rubeticket/internal/pkg/log"
 	"github.com/serhiirubets/rubeticket/internal/pkg/middleware"
-	"net/http"
 )
 
 type HandlerDeps struct {
@@ -27,8 +28,7 @@ func NewUploadsHandler(router *http.ServeMux, deps *HandlerDeps) {
 		Config:       deps.Config,
 		FileUploader: deps.FileUploader,
 	}
-
-	router.Handle("GET /uploads/{fileName}", middleware.Auth(handler.GetPhoto(), deps.Config, deps.Logger))
+	router.HandleFunc("GET /uploads/{fileName}", handler.GetPhoto())
 }
 
 // GetPhoto godoc
@@ -45,8 +45,12 @@ func NewUploadsHandler(router *http.ServeMux, deps *HandlerDeps) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /uploads/{fileName} [get]
 func (handler *Handler) GetPhoto() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authData, _ := middleware.GetAuthData(r)
+	return func(w http.ResponseWriter, r *http.Request) {
+		authData, err := middleware.GetAuthData(r)
+		if err != nil {
+			handler.Logger.Error("Error getting auth data", "error", err.Error())
+			return
+		}
 
 		fileName := r.PathValue("fileName")
 		if fileName == "" {
@@ -54,18 +58,31 @@ func (handler *Handler) GetPhoto() http.HandlerFunc {
 			return
 		}
 
-		// Check that user is a file owner
+		// Check if file exists in database
 		var fileModel file.File
-		if err := handler.FileUploader.DB.
-			Where("file_path = ? AND user_id = ?", fileName, authData.UserID).
-			First(&fileModel).Error; err != nil {
-			handler.Logger.Warn("Unauthorized file access attempt", "file_path", fileName, "user_id", authData.UserID)
+		var userID uint
+		if authData.UserID != 0 {
+			userID = authData.UserID
+		}
+		query := handler.FileUploader.DB.Where("file_path = ?", fileName)
+		if userID != 0 {
+			query = query.Where("user_id = ?", userID)
+		}
+		if err := query.First(&fileModel).Error; err != nil {
+			handler.Logger.Warn("File not found in database", "file_path", fileName, "user_id", userID, "error", err.Error())
 			http.Error(w, "Forbidden or file not found", http.StatusForbidden)
 			return
 		}
 
 		filePath := "uploads/" + fileModel.FilePath
 
+		// Check if file exists on disk
+		if _, err := http.Dir(".").Open(filePath); err != nil {
+			handler.Logger.Warn("File not found on disk", "file_path", filePath, "error", err.Error())
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+
 		http.ServeFile(w, r, filePath)
-	})
+	}
 }

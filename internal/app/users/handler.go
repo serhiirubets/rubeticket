@@ -1,9 +1,10 @@
 package users
 
 import (
+	"net/http"
+
 	"github.com/serhiirubets/rubeticket/internal/pkg/log"
 	"github.com/serhiirubets/rubeticket/internal/pkg/res"
-	"net/http"
 )
 
 type UserHandlerDeps struct {
@@ -22,13 +23,13 @@ func NewUserHandler(router *http.ServeMux, deps *UserHandlerDeps) {
 		Logger:         deps.Logger,
 	}
 
-	router.Handle("Get /users", handler.Find())
-	router.Handle("Get /users/{id}", handler.GetById())
+	router.HandleFunc("GET /users", handler.Find())
+	router.HandleFunc("GET /users/{id}", handler.GetById())
 }
 
 func (handler *UserHandler) Find() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		// TODO: Implement find users
 	}
 }
 

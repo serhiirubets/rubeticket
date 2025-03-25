@@ -36,10 +36,10 @@ func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
 		FileUploader:   deps.FileUploader,
 	}
 
-	router.Handle("GET /account", middleware.Auth(handler.GetAccount(), deps.Config, deps.Logger))
-	router.Handle("PATCH /account", middleware.Auth(handler.UpdateAccountPatch(), deps.Config, deps.Logger))
-	router.Handle("PUT /account", middleware.Auth(handler.UpdateAccountPut(), deps.Config, deps.Logger))
-	router.Handle("POST /account/photo", middleware.Auth(handler.UploadPhoto(), deps.Config, deps.Logger))
+	router.HandleFunc("GET /account", handler.GetAccount())
+	router.HandleFunc("PATCH /account", handler.UpdateAccountPatch())
+	router.HandleFunc("PUT /account", handler.UpdateAccountPut())
+	router.HandleFunc("POST /account/photo", handler.UploadPhoto())
 }
 
 // GetAccount godoc
@@ -52,7 +52,7 @@ func NewAccountHandler(router *http.ServeMux, deps *AccountHandlerDeps) {
 // @Failure 401 {object} string "Not authorized"
 // @Router /v1/account [get]
 func (handler *AccountHandler) GetAccount() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		authData, _ := middleware.GetAuthData(r)
 
 		user, userErr := handler.UserRepository.GetByEmail(authData.Email)
@@ -84,7 +84,7 @@ func (handler *AccountHandler) GetAccount() http.HandlerFunc {
 		}
 
 		res.Json(w, body, http.StatusOK)
-	})
+	}
 }
 
 // UpdateAccountPatch godoc
@@ -101,7 +101,7 @@ func (handler *AccountHandler) GetAccount() http.HandlerFunc {
 // @Failure 500 {object} string "Internal server error"
 // @Router /v1/account [patch]
 func (handler *AccountHandler) UpdateAccountPatch() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		authData, _ := middleware.GetAuthData(r)
 
 		body, err := req.HandleBody[UpdateAccountRequestPatch](&w, r)
@@ -154,7 +154,7 @@ func (handler *AccountHandler) UpdateAccountPatch() http.HandlerFunc {
 		}
 
 		res.Json(w, response, http.StatusOK)
-	})
+	}
 }
 
 // UpdateAccountPut godoc
@@ -171,7 +171,7 @@ func (handler *AccountHandler) UpdateAccountPatch() http.HandlerFunc {
 // @Failure 500 {object} string "Internal server error"
 // @Router /v1/account [put]
 func (handler *AccountHandler) UpdateAccountPut() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		authData, _ := middleware.GetAuthData(r)
 
 		body, errBody := req.HandleBody[UpdateAccountRequestPut](&w, r)
@@ -206,7 +206,7 @@ func (handler *AccountHandler) UpdateAccountPut() http.HandlerFunc {
 			Birthday:  user.Birthday,
 		}
 		res.Json(w, response, http.StatusOK)
-	})
+	}
 }
 
 // UploadPhoto godoc
@@ -223,7 +223,7 @@ func (handler *AccountHandler) UpdateAccountPut() http.HandlerFunc {
 // @Failure 500 {object} string "Internal server error"
 // @Router /v1/account/photo [post]
 func (handler *AccountHandler) UploadPhoto() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		authData, _ := middleware.GetAuthData(r)
 
 		r.Body = http.MaxBytesReader(w, r.Body, handler.FileUploader.MaxSizeMB<<20)
@@ -253,5 +253,5 @@ func (handler *AccountHandler) UploadPhoto() http.HandlerFunc {
 		}
 
 		res.Json(w, map[string]string{"message": "Photo uploaded", "uuid": fileModel.UUID}, http.StatusOK)
-	})
+	}
 }

@@ -2,12 +2,15 @@ package jwt
 
 import (
 	"fmt"
+
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/serhiirubets/rubeticket/internal/app/users"
 )
 
 type Payload struct {
 	Email string
 	Id    uint
+	Role  users.Role
 }
 
 type JWT struct {
@@ -19,7 +22,11 @@ func NewJWT(secret string) *JWT {
 }
 
 func (j *JWT) Create(data *Payload) (string, error) {
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"email": data.Email, "id": data.Id})
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": data.Email,
+		"id":    data.Id,
+		"role":  data.Role,
+	})
 	s, err := t.SignedString([]byte(j.Secret))
 
 	if err != nil {
@@ -67,5 +74,18 @@ func (j *JWT) Parse(token string) (*Payload, error) {
 		return nil, fmt.Errorf("id field must be a number")
 	}
 
-	return &Payload{Email: emailStr, Id: uint(idFloat)}, nil
+	role, ok := claims["role"]
+	if !ok {
+		return nil, fmt.Errorf("role field is missing")
+	}
+	roleStr, ok := role.(string)
+	if !ok {
+		return nil, fmt.Errorf("role field must be a string")
+	}
+
+	return &Payload{
+		Email: emailStr,
+		Id:    uint(idFloat),
+		Role:  users.Role(roleStr),
+	}, nil
 }

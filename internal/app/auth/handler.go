@@ -1,22 +1,24 @@
 package auth
 
 import (
-	configs "github.com/serhiirubets/rubeticket/config"
+	"net/http"
+
+	"github.com/serhiirubets/rubeticket/config"
+	"github.com/serhiirubets/rubeticket/internal/app/users"
 	"github.com/serhiirubets/rubeticket/internal/pkg/jwt"
 	"github.com/serhiirubets/rubeticket/internal/pkg/log"
 	"github.com/serhiirubets/rubeticket/internal/pkg/req"
 	"github.com/serhiirubets/rubeticket/internal/pkg/res"
-	"net/http"
 )
 
 type AuthHandlerDeps struct {
-	*configs.Config
+	*config.Config
 	*AuthService
 	Logger log.ILogger
 }
 
 type AuthHandler struct {
-	*configs.Config
+	*config.Config
 	*AuthService
 	Logger log.ILogger
 }
@@ -58,7 +60,7 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 			return
 		}
 
-		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(&jwt.Payload{Email: loginDto.Email, Id: loginDto.Id})
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(&jwt.Payload{Email: loginDto.Email, Id: loginDto.Id, Role: loginDto.Role})
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -102,7 +104,7 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 			return
 		}
 
-		token, jwtErr := jwt.NewJWT(handler.Config.Auth.Secret).Create(&jwt.Payload{Email: body.Email, Id: id})
+		token, jwtErr := jwt.NewJWT(handler.Config.Auth.Secret).Create(&jwt.Payload{Email: body.Email, Id: id, Role: users.UserRole})
 
 		if jwtErr != nil {
 			handler.Logger.WithFields(log.WithFields{

@@ -3,9 +3,10 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/serhiirubets/rubeticket/internal/app/users"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 type AuthService struct {
@@ -44,6 +45,7 @@ func (service *AuthService) Register(payload *RegisterRequest) (uint, error) {
 		Birthday:     birthday,
 		PasswordHash: string(fromPassword),
 		Gender:       payload.Gender,
+		Role:         users.UserRole,
 	}
 
 	createdUser, dbErr := service.UserRepository.Create(user)
@@ -63,5 +65,9 @@ func (service *AuthService) Login(email, password string) (*LoginResponseDto, er
 	if err != nil {
 		return nil, errors.New(ErrWrongCredentials)
 	}
-	return &LoginResponseDto{Id: existedUser.ID, Email: email}, nil
+	return &LoginResponseDto{
+		Id:    existedUser.ID,
+		Email: email,
+		Role:  existedUser.Role,
+	}, nil
 }

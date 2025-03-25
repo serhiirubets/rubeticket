@@ -1,12 +1,14 @@
 package users
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Status string
 type Gender string
+type Role string
 
 const (
 	Active  Status = "active"
@@ -18,6 +20,12 @@ const (
 const (
 	Male   Gender = "male"
 	Female Gender = "female"
+)
+
+const (
+	UserRole      Role = "user"
+	AdminRole     Role = "admin"
+	ModeratorRole Role = "moderator"
 )
 
 var StatusMap = map[Status]string{
@@ -37,4 +45,5 @@ type User struct {
 	Gender       Gender     `gorm:"type:varchar(6);not null" json:"gender"` // (male/female)
 	ActivatedAt  *time.Time `json:"activatedAt"`
 	Status       Status     `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	Role         Role       `gorm:"type:varchar(20);default:'user'"`
 }
