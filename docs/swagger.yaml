@@ -257,6 +257,51 @@ definitions:
     x-enum-varnames:
     - Male
     - Female
+  users.GetUserResponse:
+    properties:
+      birthday:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      gender:
+        $ref: '#/definitions/users.Gender'
+      id:
+        type: integer
+      lastName:
+        type: string
+      role:
+        $ref: '#/definitions/users.Role'
+      status:
+        $ref: '#/definitions/users.Status'
+      updatedAt:
+        type: string
+    type: object
+  users.Role:
+    enum:
+    - user
+    - admin
+    - moderator
+    type: string
+    x-enum-varnames:
+    - UserRole
+    - AdminRole
+    - ModeratorRole
+  users.Status:
+    enum:
+    - active
+    - banned
+    - pending
+    - deleted
+    type: string
+    x-enum-varnames:
+    - Active
+    - Banned
+    - Pending
+    - Deleted
   venues.CreateVenueRequest:
     description: Create venue request
     properties:
@@ -336,7 +381,7 @@ info:
   title: Concert booking API
   version: "1.0"
 paths:
-  /admin/bands:
+  /admin/v1/bands:
     get:
       description: Get a paginated list of bands
       parameters:
@@ -399,7 +444,7 @@ paths:
       summary: Create a new band
       tags:
       - Admin/Bands
-  /admin/bands/{id}:
+  /admin/v1/bands/{id}:
     delete:
       description: Delete an existing band
       parameters:
@@ -504,7 +549,7 @@ paths:
       summary: Update a band
       tags:
       - Admin/Bands
-  /admin/concerts:
+  /admin/v1/concerts:
     get:
       description: Get a paginated list of concerts
       parameters:
@@ -567,7 +612,7 @@ paths:
       summary: Create a new concert
       tags:
       - Admin/Concerts
-  /admin/concerts/{id}:
+  /admin/v1/concerts/{id}:
     delete:
       description: Delete an existing concert
       parameters:
@@ -672,7 +717,7 @@ paths:
       summary: Update a concert
       tags:
       - Admin/Concerts
-  /admin/venues:
+  /admin/v1/venues:
     get:
       description: Get a paginated list of venues
       parameters:
@@ -735,7 +780,7 @@ paths:
       summary: Create a new venue
       tags:
       - Admin/Venues
-  /admin/venues/{id}:
+  /admin/v1/venues/{id}:
     delete:
       description: Delete an existing venue
       parameters:
@@ -840,6 +885,179 @@ paths:
       summary: Update a venue
       tags:
       - Admin/Venues
+  /api/v1/account:
+    put:
+      consumes:
+      - application/json
+      description: Replace all fields of the current user's account with provided
+        values
+      parameters:
+      - description: Full account details to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/accounts.UpdateAccountRequestPut'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/accounts.UpdateAccountResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Update full account info
+      tags:
+      - Account
+  /api/v1/account/photo:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a photo file for the current user
+      parameters:
+      - description: Photo file to upload
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a photo
+      tags:
+      - Account
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 'Login user, set token in cookie and return success: true'
+      parameters:
+      - description: LoginRequest credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged in
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Login a user
+      tags:
+      - auth
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user and return authentication token
+      parameters:
+      - description: Registration credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully registered
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - auth
+  /api/v1/users/{id}:
+    get:
+      description: Returns a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.GetUserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get user by ID
+      tags:
+      - Users
   /uploads/{fileName}:
     get:
       description: Retrieve a file by its path for the authenticated user
@@ -931,145 +1149,4 @@ paths:
       summary: Update account info
       tags:
       - Account
-    put:
-      consumes:
-      - application/json
-      description: Replace all fields of the current user's account with provided
-        values
-      parameters:
-      - description: Full account details to update
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/accounts.UpdateAccountRequestPut'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/accounts.UpdateAccountResponse'
-        "400":
-          description: Invalid request body
-          schema:
-            type: string
-        "401":
-          description: Not authorized
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Update full account info
-      tags:
-      - Account
-  /v1/account/photo:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a photo file for the current user
-      parameters:
-      - description: Photo file to upload
-        in: formData
-        name: photo
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Not authorized
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Upload a photo
-      tags:
-      - Account
-  /v1/auth/login:
-    post:
-      consumes:
-      - application/json
-      description: 'Login user, set token in cookie and return success: true'
-      parameters:
-      - description: LoginRequest credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully logged in
-          schema:
-            $ref: '#/definitions/auth.LoginResponse'
-        "400":
-          description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Login a user
-      tags:
-      - auth
-  /v1/auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new user and return authentication token
-      parameters:
-      - description: Registration credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully registered
-          schema:
-            $ref: '#/definitions/auth.RegisterResponse'
-        "400":
-          description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Register a new user
-      tags:
-      - auth
 swagger: "2.0"

@@ -51,7 +51,7 @@ func NewVenueHandler(router *http.ServeMux, deps *VenueHandlerDeps) {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/venues [post]
+// @Router /admin/v1/venues [post]
 func (h *VenueHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[CreateVenueRequest](&w, r)
@@ -92,7 +92,7 @@ func (h *VenueHandler) Create() http.HandlerFunc {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
 // @Failure 404 {string} string "Not found"
-// @Router /admin/venues/{id} [put]
+// @Router /admin/v1/venues/{id} [put]
 func (h *VenueHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -140,7 +140,7 @@ func (h *VenueHandler) Update() http.HandlerFunc {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/venues/{id} [delete]
+// @Router /admin/v1/venues/{id} [delete]
 func (h *VenueHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -171,7 +171,7 @@ func (h *VenueHandler) Delete() http.HandlerFunc {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
 // @Failure 404 {string} string "Not found"
-// @Router /admin/venues/{id} [get]
+// @Router /admin/v1/venues/{id} [get]
 func (h *VenueHandler) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -209,7 +209,7 @@ func (h *VenueHandler) GetByID() http.HandlerFunc {
 // @Success 200 {object} ListVenuesResponse
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/venues [get]
+// @Router /admin/v1/venues [get]
 func (h *VenueHandler) List() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		page, _ := strconv.Atoi(r.URL.Query().Get("page"))

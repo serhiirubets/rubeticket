@@ -169,7 +169,7 @@ func (handler *AccountHandler) UpdateAccountPatch() http.HandlerFunc {
 // @Failure 400 {object} string "Invalid request body"
 // @Failure 401 {object} string "Not authorized"
 // @Failure 500 {object} string "Internal server error"
-// @Router /v1/account [put]
+// @Router /api/v1/account [put]
 func (handler *AccountHandler) UpdateAccountPut() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authData, _ := middleware.GetAuthData(r)
@@ -221,7 +221,7 @@ func (handler *AccountHandler) UpdateAccountPut() http.HandlerFunc {
 // @Failure 400 {object} string "Bad request"
 // @Failure 401 {object} string "Not authorized"
 // @Failure 500 {object} string "Internal server error"
-// @Router /v1/account/photo [post]
+// @Router /api/v1/account/photo [post]
 func (handler *AccountHandler) UploadPhoto() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authData, _ := middleware.GetAuthData(r)

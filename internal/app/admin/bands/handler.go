@@ -51,7 +51,7 @@ func NewBandHandler(router *http.ServeMux, deps *BandHandlerDeps) {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/bands [post]
+// @Router /admin/v1/bands [post]
 func (h *BandHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[CreateBandRequest](&w, r)
@@ -89,7 +89,7 @@ func (h *BandHandler) Create() http.HandlerFunc {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
 // @Failure 404 {string} string "Not found"
-// @Router /admin/bands/{id} [put]
+// @Router /admin/v1/bands/{id} [put]
 func (h *BandHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -134,7 +134,7 @@ func (h *BandHandler) Update() http.HandlerFunc {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/bands/{id} [delete]
+// @Router /admin/v1/bands/{id} [delete]
 func (h *BandHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -165,7 +165,7 @@ func (h *BandHandler) Delete() http.HandlerFunc {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
 // @Failure 404 {string} string "Not found"
-// @Router /admin/bands/{id} [get]
+// @Router /admin/v1/bands/{id} [get]
 func (h *BandHandler) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -200,7 +200,7 @@ func (h *BandHandler) GetByID() http.HandlerFunc {
 // @Success 200 {object} ListBandsResponse
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/bands [get]
+// @Router /admin/v1/bands [get]
 func (h *BandHandler) List() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		page, _ := strconv.Atoi(r.URL.Query().Get("page"))

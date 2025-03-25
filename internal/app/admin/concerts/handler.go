@@ -51,7 +51,7 @@ func NewConcertHandler(router *http.ServeMux, deps *ConcertHandlerDeps) {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/concerts [post]
+// @Router /admin/v1/concerts [post]
 func (h *ConcertHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[CreateConcertRequest](&w, r)
@@ -83,7 +83,7 @@ func (h *ConcertHandler) Create() http.HandlerFunc {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
 // @Failure 404 {string} string "Not found"
-// @Router /admin/concerts/{id} [put]
+// @Router /admin/v1/concerts/{id} [put]
 func (h *ConcertHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -122,7 +122,7 @@ func (h *ConcertHandler) Update() http.HandlerFunc {
 // @Failure 400 {string} string "Bad request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/concerts/{id} [delete]
+// @Router /admin/v1/concerts/{id} [delete]
 func (h *ConcertHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -153,7 +153,7 @@ func (h *ConcertHandler) Delete() http.HandlerFunc {
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
 // @Failure 404 {string} string "Not found"
-// @Router /admin/concerts/{id} [get]
+// @Router /admin/v1/concerts/{id} [get]
 func (h *ConcertHandler) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
@@ -182,7 +182,7 @@ func (h *ConcertHandler) GetByID() http.HandlerFunc {
 // @Success 200 {object} ListConcertsResponse
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 403 {string} string "Forbidden"
-// @Router /admin/concerts [get]
+// @Router /admin/v1/concerts [get]
 func (h *ConcertHandler) List() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
